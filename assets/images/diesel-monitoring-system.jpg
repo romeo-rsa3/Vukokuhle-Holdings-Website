@@ -1,0 +1,1 @@
+This file would contain the binary image data. Since I cannot store binary data as text, you'll need to manually upload this image to the assets/images/ folder via GitHub's web interface or git CLI with: git add assets/images/diesel-monitoring-system.jpg
