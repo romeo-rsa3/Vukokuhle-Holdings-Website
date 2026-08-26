@@ -138,44 +138,72 @@
     el.textContent = new Date().getFullYear();
   });
 
-  /* ---------- Contact form: validate, then mailto fallback with success/error states ---------- */
+  /* ---------- Contact form: Formspree submission with validate + success/error states ---------- */
   var form = document.getElementById('contact-form');
   if(form){
     var errorEl = document.getElementById('form-error');
     var confirmEl = document.getElementById('form-confirm');
+    var submitBtn = document.getElementById('form-submit-btn');
+    var submitBtnDefaultHTML = submitBtn ? submitBtn.innerHTML : '';
 
     function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+    function showError(msg){
+      if(!errorEl) return;
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
 
     form.addEventListener('submit', function(e){
       e.preventDefault();
       var data = new FormData(form);
       var name = (data.get('name') || '').trim();
-      var company = (data.get('company') || '').trim();
       var email = (data.get('email') || '').trim();
-      var phone = (data.get('phone') || '').trim();
-      var interest = data.get('interest') || '';
       var message = (data.get('message') || '').trim();
 
       if(confirmEl) confirmEl.hidden = true;
 
       if(!name || !email || !message || !isValidEmail(email)){
-        if(errorEl){
-          errorEl.textContent = (!isValidEmail(email) && email)
+        showError(
+          (!isValidEmail(email) && email)
             ? 'That email address doesn\u2019t look right — please check it and try again.'
-            : 'Please fill in your name, email and message before sending.';
-          errorEl.style.display = 'block';
-        }
+            : 'Please fill in your name, email and message before sending.'
+        );
         var firstInvalid = form.querySelector(!name ? '#name' : (!email || !isValidEmail(email)) ? '#email' : '#message');
         if(firstInvalid) firstInvalid.focus();
         return;
       }
-      if(errorEl) errorEl.style.display = 'none';
 
-      var body = "Name: " + name + "%0D%0ACompany: " + company + "%0D%0AEmail: " + email +
-                 "%0D%0APhone: " + phone + "%0D%0AInterest: " + interest + "%0D%0A%0D%0A" + encodeURIComponent(message);
-      var subject = encodeURIComponent("Website enquiry — " + (company || name));
-      window.location.href = "mailto:vukile@vukokuhle.co.za?subject=" + subject + "&body=" + body;
-      if(confirmEl){ confirmEl.hidden = false; confirmEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      // Safety net: the form hasn't been connected to Formspree yet (placeholder ID still in place)
+      if(form.action.indexOf('YOUR_FORM_ID') !== -1){
+        showError('This form isn\u2019t connected yet — please email us directly at vukile@vukokuhle.co.za for now.');
+        return;
+      }
+
+      if(errorEl) errorEl.style.display = 'none';
+      if(submitBtn){ submitBtn.disabled = true; submitBtn.innerHTML = 'Sending…'; }
+
+      fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      }).then(function(response){
+        if(response.ok){
+          form.reset();
+          if(confirmEl){ confirmEl.hidden = false; confirmEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        } else {
+          response.json().then(function(json){
+            var msg = (json && json.errors && json.errors.length) ? json.errors.map(function(x){return x.message;}).join(', ') : null;
+            showError(msg || 'Something went wrong sending your message — please try again, or email us directly at vukile@vukokuhle.co.za.');
+          }).catch(function(){
+            showError('Something went wrong sending your message — please try again, or email us directly at vukile@vukokuhle.co.za.');
+          });
+        }
+      }).catch(function(){
+        showError('Couldn\u2019t reach the server — check your connection and try again, or email us directly at vukile@vukokuhle.co.za.');
+      }).finally(function(){
+        if(submitBtn){ submitBtn.disabled = false; submitBtn.innerHTML = submitBtnDefaultHTML; }
+      });
     });
 
     // Clear error state as the person starts fixing the form
