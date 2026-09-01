@@ -383,12 +383,44 @@ button{ font-family: inherit; cursor:pointer; }
    Marquee / logo strip (technology partners)
    ========================================================================== */
 .strip{
-  padding: 34px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  padding: 50px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
 }
-.strip-row{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap: 22px; }
-.strip-label{ font-family: var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color: var(--muted-2); white-space:nowrap; }
-.strip-items{ display:flex; gap: 40px; flex-wrap:wrap; }
-.strip-items span{ font-family: var(--display); font-weight:600; color: var(--muted); font-size:15.5px; }
+.strip-content{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap: 32px; }
+.strip-label{ 
+  font-family: var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; 
+  color: var(--muted-2); white-space:nowrap; min-width:140px;
+}
+.strip-logos{ 
+  display:flex; gap: 48px; flex-wrap:wrap; align-items:center; 
+  flex:1; justify-content:center;
+}
+.logo-item{
+  display:flex; align-items:center; justify-content:center;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.logo-item img{
+  height:50px; width:auto; max-width:180px;
+  filter: brightness(0.85);
+  transition: filter .3s ease;
+}
+.logo-item:hover img{
+  filter: brightness(1.1);
+}
+.logo-item .logo-text{
+  font-family: var(--display); font-weight:600; color: var(--muted); 
+  font-size:14.5px; white-space:nowrap;
+  transition: color .3s ease;
+}
+.logo-item:hover .logo-text{
+  color: var(--amber);
+}
+
+@media (max-width: 780px){
+  .strip{ padding: 40px 0; }
+  .strip-content{ justify-content:center; }
+  .strip-label{ order:1; width:100%; text-align:center; margin-bottom:16px; }
+  .strip-logos{ justify-content:center; gap:32px; }
+}
 
 /* ==========================================================================
    Cards / grids
